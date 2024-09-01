@@ -156,10 +156,22 @@ class FireflyAPIClient:
         '''
         firefly_transactions = []
         for transaction in self.get_account_transactions(start_date, end_date, account_id):
+            # Catch split transactions
+            if trans_name := transaction['attributes']['group_title']:
+                total_cost = 0
+                # Calculate total transaction cost
+                for sub_trans in transaction['attributes']['transactions']:
+                    total_cost = total_cost +int(sub_trans['amount'].split('.')[0])
+                trans_amount = str(total_cost)
+            else:
+                # Assume the transaction is not a split-transaction
+                trans_name = transaction['attributes']['transactions'][0]['description']
+                trans_amount = transaction['attributes']['transactions'][0]['amount'].split('.')[0]
+            
+            # Get the first transaction's date. 
+            # Assume even split-transactions are made on the same day 
             trans_date = transaction['attributes']['transactions'][0]['date']
             formatted_date = datetime.strptime(trans_date, '%Y-%m-%dT%H:%M:%S+00:00').strftime('%Y/%m/%d')
-            trans_name = transaction['attributes']['transactions'][0]['description']
-            trans_amount = transaction['attributes']['transactions'][0]['amount'].split('.')[0]
             firefly_transactions.append({
                 'date': formatted_date,
                 'name': trans_name,
