@@ -1,0 +1,6 @@
+# Custom files
+*.ini
+*.json
+*.sqlite
+*.csv
+csv_files/

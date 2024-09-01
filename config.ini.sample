@@ -1,0 +1,3 @@
+[GENERAL]
+token = super_secret_token 
+server = https://firefly.lan.example.com/api/v1
