@@ -128,6 +128,23 @@ class FireflyAPIClient:
             if page > data['meta']['pagination']['total_pages']:
                 break
         return all_data
+    def post_api_call(self, endpoint, params=None):
+        headers = {
+            'Authorization': f'Bearer {self.api_token}',
+            'Accept': 'application/json',
+        }
+        all_data = []
+        #params = params or {}
+        response = requests.post(
+            f'{self.base_url}/{endpoint}', json=params, headers=headers, 
+            verify=False
+        )
+        # Raise an exception for 4xx or 5xx status codes
+        response.raise_for_status()
+        data = response.json()
+        all_data.extend(data['data'])
+        return data
+
 
     def get_account_transactions(self, start_date, end_date, account_id=None):
         out = []
@@ -179,7 +196,30 @@ class FireflyAPIClient:
             })
         return firefly_transactions
 
-
+    def post_transaction(
+            self, description, date, amount, source_id, destination_id
+        ):
+        # Operational!
+        # description = "test_transaction"
+        # date = "2024-09-09"
+        # amount = 1000
+        # source_id = 79
+        # destination_id = 98
+        transaction = {
+            "transactions": [
+                {
+                    'type': "withdrawal",
+                    'description': description,
+                    'date': date,
+                    'amount': amount,
+                    'source_id': source_id,
+                    'destination_id': destination_id 
+                }
+            ]
+        }
+        output = self.post_api_call('transactions', transaction)
+        return output
+        
 
 def main():
     args = parse_arguments()
@@ -208,4 +248,11 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    #main()
+
+    # Testing stuff
+    #format_config = config['formats'][account_name]
+    fc = FireflyAPIClient(base_url, api_token)
+    #account_id = fc.get_account_id(format_config["ff_account_id_name"])
+    #print(pretty(fc.post_transaction()))
+
